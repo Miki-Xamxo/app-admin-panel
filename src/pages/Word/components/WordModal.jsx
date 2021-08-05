@@ -28,31 +28,49 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
             language} = React.useContext(AppContext)
 
         const [isLoading,  setIsLoading] = React.useState(false)
-        const [selectedModalLanguage, setSelectedModalLanguage] = React.useState(null)
         const [categoriesModal, setCategoriesModal] = React.useState([])
 
-        React.useEffect(() => {
-            setSelectedModalLanguage(selectedLanguage)
-        }, [selectedLanguage])
+
 
         React.useEffect(() => {
-            (async () => {
-                try{
-                    setIsLoading(true)
-                    const { data } = await axios.post(`/categories/search/`, { language: selectedModalLanguage, parent: null },  {
-                        headers: {
-                            Authorization: 'Token'
-                        },
-                    })
-        
-                    setIsLoading(false)
-                    setCategoriesModal(data)
-        
-                }catch(error){
-                    console.error(error)
-                }
-            })()
-        }, [selectedModalLanguage])
+            if(selectedModal){
+                (async () => {
+                    try{
+                        setIsLoading(true)
+                        const { data } = await axios.post(`/categories/search/`, {  language: selectedLanguage, parent: null },  {
+                            headers: {
+                                Authorization: 'Token',
+                            },
+                        })
+                        
+                        setIsLoading(false)
+                        setCategoriesModal(data)
+                        
+                    }catch(error){
+                        console.error(error)
+                    }
+                })()
+            }
+        }, [setCategoriesModal, selectedModal, selectedLanguage])
+
+
+        const handleClickLanguage = async (language, val) => {
+            val.category = ''
+            try{
+                setIsLoading(true)
+                const { data } = await axios.post(`/categories/search/`, { language, parent: null },  {
+                    headers: {
+                        Authorization: 'Token'                    
+                    },
+                })
+                
+                setIsLoading(false)
+                setCategoriesModal(data)
+                
+            }catch(error){
+                console.error(error)
+            }
+        }
 
     const onAddWord = async ({image, ...values}) => {
 
@@ -70,7 +88,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
             await axios.post('/words', {...values, image: formData}, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    Authorization: 'Token'
+                    Authorization: 'Token'               
                 },
             })
     
@@ -118,11 +136,6 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
         }
     }
 
-    const handleClickLanguage = (language, val) => {
-        setSelectedModalLanguage(language)
-        val.category = ''
-    }
-
     return (
         <ModalBlock 
             onClose={onClickCloseModal} 
@@ -137,7 +150,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                                 name: selectedModal ? selectedModal.name : '',
                                 translate: selectedModal ? selectedModal.translate : '',
                                 category: selectedModal || selectedCategory  ? selectedCategory.id : '',
-                                language: selectedModal ? selectedCategory.language.id :  selectedLanguage,
+                                language: selectedModal || selectedCategory  ? selectedCategory.language.id : '',
                                 image: ''
                             }}
                             validationSchema={Schema}

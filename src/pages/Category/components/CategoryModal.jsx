@@ -81,8 +81,6 @@ const CategoryModal = () => {
         return null
     }
 
-    console.log('render catModal')
-
     return (
         <ModalBlock 
             onClose={onClickCloseModal} 
