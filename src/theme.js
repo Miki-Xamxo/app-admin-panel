@@ -1,7 +1,6 @@
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createTheme } from '@material-ui/core/styles';
 
-export const theme = createMuiTheme({
-
+export const theme = createTheme({
   palette: {
     primary: {
       main: 'rgb(29, 161, 242)',
@@ -19,7 +18,6 @@ export const theme = createMuiTheme({
   },
 
   overrides: {
-
     MuiButton: {
       root: {
         borderRadius: 10,
@@ -37,7 +35,6 @@ export const theme = createMuiTheme({
       },
     },
 
-
     MuiDialogActions: {
       root: {
         marginBottom: 8,
@@ -47,7 +44,7 @@ export const theme = createMuiTheme({
     MuiDialog: {
       paper: {
         borderRadius: 15,
-        width: 450
+        width: 450,
       },
     },
 
@@ -67,7 +64,7 @@ export const theme = createMuiTheme({
         },
       },
     },
-  }
+  },
 });
 
 export default theme;
