@@ -1,18 +1,18 @@
-import React from "react";
-import axios from "axios";
-import { Button, TableCell } from "@material-ui/core";
+import React from 'react';
+import axios from 'axios';
+import { Button, TableCell } from '@material-ui/core';
 
 import {
   ContentTop,
   TableBlock,
   TableBodyBlock,
   TableHeadBlock,
-} from "../../components";
-import LanguageModal from "./components/LanguageModal";
+} from '../../components';
+import LanguageModal from './components/LanguageModal';
 
 const Language = React.memo(
   ({ classes, language, setLanguage, onOpenLanguage, setSelectedModal }) => {
-    const [searchValue, setSearchValue] = React.useState("");
+    const [searchValue, setSearchValue] = React.useState('');
 
     const onClickOpenEdit = (obj) => {
       setSelectedModal(obj);
@@ -20,7 +20,7 @@ const Language = React.memo(
     };
 
     const onRemoveItem = async (id) => {
-      if (window.confirm("Вы действительно хотите удалить?")) {
+      if (window.confirm('Вы действительно хотите удалить?')) {
         try {
           await axios.delete(`languages/${id}`, {
             headers: {
@@ -43,7 +43,7 @@ const Language = React.memo(
         />
         <TableBlock>
           <TableHeadBlock>
-            <TableCell style={{ width: "70%" }}>Язык</TableCell>
+            <TableCell style={{ width: '70%' }}>Язык</TableCell>
             <TableCell>Действия</TableCell>
           </TableHeadBlock>
           {language

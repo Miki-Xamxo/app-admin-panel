@@ -1,43 +1,41 @@
-import React from "react";
-import { Route, Switch } from "react-router-dom";
-import axios from "axios";
-
-import { makeStyles } from "@material-ui/core/styles";
-
-import { Header, DrawerBlock } from "./components";
-import { Word, Category, Language, Home } from "./pages";
-import AppContext from "./context";
+import React from 'react';
+import { Route, Switch } from 'react-router-dom';
+import axios from 'axios';
+import { makeStyles } from '@material-ui/core/styles';
+import { Header, DrawerBlock } from './components';
+import { Word, Category, Language, Home } from './pages';
+import AppContext from './context';
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
-    display: "flex",
+    display: 'flex',
   },
   iconButton: {
     padding: 10,
   },
   container: {
-    width: "1000px",
-    margin: "80px auto",
+    width: '1000px',
+    margin: '80px auto',
   },
 
   contentTop: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "50px",
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '50px',
   },
 
   formHeader: {
-    display: "flex",
-    justifyContent: "space-between",
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 
   formControl: {
-    width: "100%",
+    width: '100%',
     marginBottom: theme.spacing(2),
   },
 
   pdr: {
-    paddingRight: "30px",
+    paddingRight: '30px',
   },
 
   formSelectControl: {
@@ -46,8 +44,8 @@ const useStyles = makeStyles((theme) => ({
   },
 
   formSelect: {
-    display: "flex",
-    justifyContent: "space-between",
+    display: 'flex',
+    justifyContent: 'space-between',
     marginBottom: 20,
   },
 
@@ -60,46 +58,46 @@ const useStyles = makeStyles((theme) => ({
   },
 
   btnRemove: {
-    backgroundColor: "red",
-    padding: "5px 10px",
+    backgroundColor: 'red',
+    padding: '5px 10px',
 
-    "&:hover": {
-      backgroundColor: "rgb(200, 0, 0)",
+    '&:hover': {
+      backgroundColor: 'rgb(200, 0, 0)',
     },
   },
 
   btnEdit: {
     marginRight: 20,
-    padding: "5px 10px",
-    backgroundColor: "#43a047",
+    padding: '5px 10px',
+    backgroundColor: '#43a047',
 
-    "&:hover": {
-      backgroundColor: "rgb(46, 112, 49)",
+    '&:hover': {
+      backgroundColor: 'rgb(46, 112, 49)',
     },
   },
 
   btnAdd: {
-    display: "flex",
-    alignItems: "center",
+    display: 'flex',
+    alignItems: 'center',
     width: 300,
-    cursor: "pointer",
+    cursor: 'pointer',
     padding: 15,
-    transition: "box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out",
+    transition: 'box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out',
 
-    "&:hover": {
-      transform: "translateY(-5px)",
+    '&:hover': {
+      transform: 'translateY(-5px)',
     },
   },
 
   overlay: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    height: "100%",
-    opacity: "0.2",
-    backgroundColor: "rgb(0, 0, 0)",
-    position: "absolute",
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    opacity: '0.2',
+    backgroundColor: 'rgb(0, 0, 0)',
+    position: 'absolute',
     right: 0,
     left: 0,
     top: 0,
@@ -108,30 +106,30 @@ const useStyles = makeStyles((theme) => ({
   btnAddIcon: {
     width: 40,
     marginRight: 10,
-    color: "#fff",
+    color: '#fff',
     borderRadius: 50,
     height: 40,
   },
 
   contentAdd: {
-    display: "flex",
-    justifyContent: "space-between",
+    display: 'flex',
+    justifyContent: 'space-between',
     marginTop: 40,
   },
 
   dropzone: {
-    backgroundColor: "#eee",
-    textAlign: "center",
-    cursor: "pointer",
-    color: "#333",
-    padding: "10px",
-    marginTop: "20px",
+    backgroundColor: '#eee',
+    textAlign: 'center',
+    cursor: 'pointer',
+    color: '#333',
+    padding: '10px',
+    marginTop: '20px',
   },
 
   dropzoneIcon: {
-    marginTop: "16px",
-    color: "#888888",
-    fontSize: "42px",
+    marginTop: '16px',
+    color: '#888888',
+    fontSize: '42px',
   },
 }));
 
@@ -153,7 +151,7 @@ function App() {
   React.useEffect(() => {
     (async () => {
       try {
-        const respLanguage = await axios.get("/languages", {
+        const respLanguage = await axios.get('/languages', {
           headers: {
             Authorization: process.env.REACT_APP_TOKEN,
           },

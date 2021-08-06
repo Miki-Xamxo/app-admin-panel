@@ -1,17 +1,15 @@
-import React from "react";
-import axios from "axios";
-import { Link, useParams } from "react-router-dom";
-import { Button, TableCell } from "@material-ui/core";
-
-import { CircularProgress } from "@material-ui/core";
+import React from 'react';
+import axios from 'axios';
+import { Link, useParams } from 'react-router-dom';
+import { Button, TableCell, CircularProgress } from '@material-ui/core';
 
 import {
   ContentTop,
   TableBlock,
   TableBodyBlock,
   TableHeadBlock,
-} from "../../components";
-import WordModal from "./components/WordModal";
+} from '../../components';
+import WordModal from './components/WordModal';
 
 const Word = React.memo(
   ({
@@ -23,7 +21,7 @@ const Word = React.memo(
     visibleWord,
   }) => {
     const [isFetching, setIsFetching] = React.useState(true);
-    const [searchValue, setSearchValue] = React.useState("");
+    const [searchValue, setSearchValue] = React.useState('');
 
     const params = useParams();
 
@@ -50,14 +48,12 @@ const Word = React.memo(
     };
 
     const onRemoveItem = async (id) => {
-      if (window.confirm("Вы действительно хотите удалить?")) {
+      if (window.confirm('Вы действительно хотите удалить?')) {
         try {
-          setSelectedCategory((prev) => {
-            return {
-              ...prev,
-              words: prev.words.filter((item) => item.id !== id),
-            };
-          });
+          setSelectedCategory((prev) => ({
+            ...prev,
+            words: prev.words.filter((item) => item.id !== id),
+          }));
           await axios.delete(`/words/${id}`, {
             headers: {
               Authorization: process.env.REACT_APP_TOKEN,
@@ -95,7 +91,7 @@ const Word = React.memo(
                   <TableBodyBlock key={item.id}>
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.translate}</TableCell>
-                    <TableCell style={{ width: "30%" }}>
+                    <TableCell style={{ width: '30%' }}>
                       <Button
                         onClick={() => onClickOpenEdit(item)}
                         variant="contained"

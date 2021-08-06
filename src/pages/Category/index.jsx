@@ -1,7 +1,7 @@
-import React from "react";
-import { Button, CircularProgress, TableCell } from "@material-ui/core";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import React from 'react';
+import { Button, CircularProgress, TableCell } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 import {
   ContentTop,
@@ -9,8 +9,8 @@ import {
   TableBlock,
   TableBodyBlock,
   TableHeadBlock,
-} from "../../components";
-import CategoryModal from "./components/CategoryModal";
+} from '../../components';
+import CategoryModal from './components/CategoryModal';
 
 const Category = React.memo(
   ({
@@ -22,7 +22,7 @@ const Category = React.memo(
     onOpenCategory,
   }) => {
     const [isFetching, setIsFetching] = React.useState(true);
-    const [searchValue, setSearchValue] = React.useState("");
+    const [searchValue, setSearchValue] = React.useState('');
 
     React.useEffect(() => {
       (async () => {
@@ -52,7 +52,7 @@ const Category = React.memo(
     };
 
     const onRemoveItem = async (id) => {
-      if (window.confirm("Вы действительно хотите удалить?")) {
+      if (window.confirm('Вы действительно хотите удалить?')) {
         try {
           await axios.delete(`categories/${id}`, {
             headers: {
@@ -87,7 +87,7 @@ const Category = React.memo(
               .map((item) => (
                 <TableBodyBlock key={item.id}>
                   <Link to={`/categories/${item.id}`}>
-                    <TableCell style={{ width: "70%", cursor: "pointer" }}>
+                    <TableCell style={{ width: '70%', cursor: 'pointer' }}>
                       {item.name}
                     </TableCell>
                   </Link>
