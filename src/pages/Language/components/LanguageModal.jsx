@@ -33,7 +33,7 @@ const LanguageModal = () => {
             const { data } = await axios.post('/languages', values, {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: 'Token'
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
     
@@ -52,7 +52,7 @@ const LanguageModal = () => {
             await axios.patch(`languages/${selectedId}`, values, {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: 'Token'
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
 

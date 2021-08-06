@@ -36,13 +36,13 @@ const CategoryModal = () => {
             await axios.post('/categories', {...values, position: 1}, {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: 'Token'
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
             
             const { data } =  await axios.post(`/categories/search/`, { language: values.language, parent: null },  {
                 headers: {
-                    Authorization: 'Token'
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
             
@@ -60,7 +60,7 @@ const CategoryModal = () => {
             await axios.patch(`/categories/${selectedId}`, values, {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: 'Token'
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
 

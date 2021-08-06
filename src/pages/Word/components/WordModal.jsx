@@ -39,7 +39,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                         setIsLoading(true)
                         const { data } = await axios.post(`/categories/search/`, {  language: selectedLanguage, parent: null },  {
                             headers: {
-                                Authorization: 'Token',
+                                Authorization: process.env.REACT_APP_TOKEN,
                             },
                         })
                         
@@ -60,7 +60,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                 setIsLoading(true)
                 const { data } = await axios.post(`/categories/search/`, { language, parent: null },  {
                     headers: {
-                        Authorization: 'Token'                    
+                        Authorization: process.env.REACT_APP_TOKEN,
                     },
                 })
                 
@@ -88,13 +88,13 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
             await axios.post('/words', {...values, image: formData}, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    Authorization: 'Token'               
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
     
             const resp = await axios.get(`/categories/${values.category}`, {
                 headers: {
-                    Authorization: 'Token'
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
             setIsLoading(false)
@@ -112,7 +112,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
             await axios.patch(`/words/${selectedId}`, values, {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: 'Token'
+                    Authorization: process.env.REACT_APP_TOKEN,
                 },
             })
 
