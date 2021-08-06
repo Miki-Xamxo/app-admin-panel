@@ -3,6 +3,7 @@ import { Button, FormControl, FormGroup,
     TextField, InputLabel, Select, Paper, MenuItem} from '@material-ui/core';
 import {  Formik } from 'formik';
 import Dropzone from "react-dropzone";
+import {useDropzone} from 'react-dropzone'
 import * as Yup from 'yup';
 import CloudUpload from '@material-ui/icons/CloudUpload';
 
@@ -27,8 +28,27 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
             onClickCloseModal, 
             language} = React.useContext(AppContext)
 
+
+
+            const onDrop = React.useCallback((files) => {
+                files.forEach((file) => {
+                    const reader = new FileReader()
+
+                    reader.onabort = () => console.log('file reading was aborted')
+                    reader.onerror = () => console.log('file reading has failed')
+                    reader.onload = () => {
+                        // Do whatever you want with the file contents
+                        const binaryStr = reader.result
+                        console.log(binaryStr)
+                    }
+                    // reader.readAsArrayBuffer(file)
+                })
+            }, [])
+
         const [isLoading,  setIsLoading] = React.useState(false)
         const [categoriesModal, setCategoriesModal] = React.useState([])
+        const {getRootProps, getInputProps} = useDropzone({onDrop})
+
 
 
 
@@ -39,7 +59,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                         setIsLoading(true)
                         const { data } = await axios.post(`/categories/search/`, {  language: selectedLanguage, parent: null },  {
                             headers: {
-                                Authorization: 'Token',
+                                Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMyMmRhMDUwLTBjMzYtNDdkMi1hZWU4LTRlODQ3Y2Q4NDU5NSIsImVtYWlsIjoiYWRhbTIyMTg1NTE1QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkFkYW0iLCJsYXN0TmFtZSI6IkJhbGtvZXYiLCJyb2xlcyI6W3siaWQiOiI4YjEyZjUzYy0wNmE0LTRjODctYWJlMy0xOTkwYjQ1NzBkOTkiLCJuYW1lIjoiQWRtaW4ifV0sImlhdCI6MTYyNTkxNzcyOSwiZXhwIjoxNjMzNjkzNzI5fQ.ieOm_eF_2-N5KtVLh4N3O5xaLgDEL6VvjrtGkafmFTE',
                             },
                         })
                         
@@ -60,7 +80,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                 setIsLoading(true)
                 const { data } = await axios.post(`/categories/search/`, { language, parent: null },  {
                     headers: {
-                        Authorization: 'Token'                    
+                        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMyMmRhMDUwLTBjMzYtNDdkMi1hZWU4LTRlODQ3Y2Q4NDU5NSIsImVtYWlsIjoiYWRhbTIyMTg1NTE1QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkFkYW0iLCJsYXN0TmFtZSI6IkJhbGtvZXYiLCJyb2xlcyI6W3siaWQiOiI4YjEyZjUzYy0wNmE0LTRjODctYWJlMy0xOTkwYjQ1NzBkOTkiLCJuYW1lIjoiQWRtaW4ifV0sImlhdCI6MTYyNTkxNzcyOSwiZXhwIjoxNjMzNjkzNzI5fQ.ieOm_eF_2-N5KtVLh4N3O5xaLgDEL6VvjrtGkafmFTE'                    
                     },
                 })
                 
@@ -74,35 +94,33 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
 
     const onAddWord = async ({image, ...values}) => {
 
-
         console.log(image)
-        console.log(values)
 
         const formData = new FormData()
-        formData.append("image", image)
+        formData.append("file", image)
 
-        console.log(formData)
+        const dataImage = formData.get("image")
 
-        try{
-            setIsLoading(true)
-            await axios.post('/words', {...values, image: formData}, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: 'Token'               
-                },
-            })
+        // try{
+        //     setIsLoading(true)
+        //     await axios.post('/words', {...values, image: dataImage}, {
+        //         headers: {
+        //             'Content-Type': 'multipart/form-data',
+        //             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMyMmRhMDUwLTBjMzYtNDdkMi1hZWU4LTRlODQ3Y2Q4NDU5NSIsImVtYWlsIjoiYWRhbTIyMTg1NTE1QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkFkYW0iLCJsYXN0TmFtZSI6IkJhbGtvZXYiLCJyb2xlcyI6W3siaWQiOiI4YjEyZjUzYy0wNmE0LTRjODctYWJlMy0xOTkwYjQ1NzBkOTkiLCJuYW1lIjoiQWRtaW4ifV0sImlhdCI6MTYyNTkxNzcyOSwiZXhwIjoxNjMzNjkzNzI5fQ.ieOm_eF_2-N5KtVLh4N3O5xaLgDEL6VvjrtGkafmFTE'               
+        //         },
+        //     })
     
-            const resp = await axios.get(`/categories/${values.category}`, {
-                headers: {
-                    Authorization: 'Token'
-                },
-            })
-            setIsLoading(false)
-            setSelectedCategory(resp.data)
-            onClickCloseModal()
-        }catch(error){
-            console.error(error)
-        }
+        //     const resp = await axios.get(`/categories/${values.category}`, {
+        //         headers: {
+        //             Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMyMmRhMDUwLTBjMzYtNDdkMi1hZWU4LTRlODQ3Y2Q4NDU5NSIsImVtYWlsIjoiYWRhbTIyMTg1NTE1QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkFkYW0iLCJsYXN0TmFtZSI6IkJhbGtvZXYiLCJyb2xlcyI6W3siaWQiOiI4YjEyZjUzYy0wNmE0LTRjODctYWJlMy0xOTkwYjQ1NzBkOTkiLCJuYW1lIjoiQWRtaW4ifV0sImlhdCI6MTYyNTkxNzcyOSwiZXhwIjoxNjMzNjkzNzI5fQ.ieOm_eF_2-N5KtVLh4N3O5xaLgDEL6VvjrtGkafmFTE'
+        //         },
+        //     })
+        //     setIsLoading(false)
+        //     setSelectedCategory(resp.data)
+        //     onClickCloseModal()
+        // }catch(error){
+        //     console.error(error)
+        // }
     }
     
 
@@ -112,7 +130,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
             await axios.patch(`/words/${selectedId}`, values, {
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: 'Token'
+                    Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMyMmRhMDUwLTBjMzYtNDdkMi1hZWU4LTRlODQ3Y2Q4NDU5NSIsImVtYWlsIjoiYWRhbTIyMTg1NTE1QGdtYWlsLmNvbSIsImZpcnN0TmFtZSI6IkFkYW0iLCJsYXN0TmFtZSI6IkJhbGtvZXYiLCJyb2xlcyI6W3siaWQiOiI4YjEyZjUzYy0wNmE0LTRjODctYWJlMy0xOTkwYjQ1NzBkOTkiLCJuYW1lIjoiQWRtaW4ifV0sImlhdCI6MTYyNTkxNzcyOSwiZXhwIjoxNjMzNjkzNzI5fQ.ieOm_eF_2-N5KtVLh4N3O5xaLgDEL6VvjrtGkafmFTE'
                 },
             })
 
@@ -151,7 +169,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                                 translate: selectedModal ? selectedModal.translate : '',
                                 category: selectedModal || selectedCategory  ? selectedCategory.id : '',
                                 language: selectedModal || selectedCategory  ? selectedCategory.language.id : '',
-                                image: ''
+                                image: []
                             }}
                             validationSchema={Schema}
                             onSubmit={(values) => {
@@ -247,8 +265,29 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                                         </FormControl>
                                     </div> 
                                 }
-                                <Dropzone onDrop={(acceptedFiles) => {
-                                    setFieldValue('image', values.image = acceptedFiles[0])
+                                <input
+                                    type='file'
+                                    name='image'
+                                    label='Введите слово'
+                                    className={classes.pdr}
+                                    onChange={(e) => handleChange(e.target.files[0])}
+                                    value={values.image}
+                                    required/>
+                                {/* <Paper className={classes.dropzone} variant='outlined' {...getRootProps()}>
+                                    {
+                                        !values.image 
+                                            ? <CloudUpload className={classes.dropzoneIcon}/>
+                                            : <img 
+                                                src={''}
+                                                alt={''}
+                                                height={200}
+                                                width={200} />
+                                    }
+                                    <input {...getInputProps()} name='image'/>
+                                </Paper> */}
+                                {/* <Dropzone onDrop={(files) => {
+                                    console.log(files)
+                                    setFieldValue('image', values.image.concat(files))
                                 }}>
                                     {
                                         ({getRootProps, getInputProps}) => 
@@ -265,7 +304,7 @@ const WordModal =  ({selectedCategory, setSelectedCategory}) => {
                                                 <input {...getInputProps()} name='image'/>
                                             </Paper>)
                                     }
-                                </Dropzone>
+                                </Dropzone> */}
                                 <Button 
                                     style={{marginTop: 20  }} 
                                     color='primary' 
