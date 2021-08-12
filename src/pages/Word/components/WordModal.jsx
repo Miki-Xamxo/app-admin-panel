@@ -1,4 +1,6 @@
 import React from 'react';
+import axios from 'axios';
+import { debounce } from 'lodash';
 import {
   Button,
   FormControl,
@@ -8,14 +10,17 @@ import {
   Select,
   Paper,
   MenuItem,
+  IconButton,
+  Icon,
 } from '@material-ui/core';
-import { Formik } from 'formik';
+import { Formik, useFormik } from 'formik';
 import Dropzone from 'react-dropzone';
 import * as Yup from 'yup';
-import CloudUpload from '@material-ui/icons/CloudUpload';
 
-import axios from 'axios';
-import { LoadingModal, ModalBlock } from '../../../components';
+import CloudUpload from '@material-ui/icons/CloudUpload';
+import ClearIcon from '@material-ui/icons/Clear';
+
+import { DropZoneBlock, LoadingModal, ModalBlock } from '../../../components';
 import AppContext from '../../../context';
 
 const Schema = Yup.object().shape({
@@ -26,17 +31,13 @@ const Schema = Yup.object().shape({
 });
 
 const WordModal = ({ selectedCategory, setSelectedCategory }) => {
-  const {
-    classes,
-    selectedModal,
-    visibleWord,
-    selectedLanguage,
-    onClickCloseModal,
-    language,
-  } = React.useContext(AppContext);
+  const { classes, selectedModal, visibleWord, onClickCloseModal, language } =
+    React.useContext(AppContext);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [categoriesModal, setCategoriesModal] = React.useState([]);
+  const [imagePreview, setImagePreview] = React.useState(null);
+  const [audioPreview, setAudioPreview] = React.useState(null);
 
   React.useEffect(() => {
     if (selectedModal) {
@@ -45,7 +46,7 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
           setIsLoading(true);
           const { data } = await axios.post(
             `/categories/search/`,
-            { language: selectedLanguage, parent: null },
+            { language: selectedCategory.language.id, parent: null },
             {
               headers: {
                 Authorization: process.env.REACT_APP_TOKEN,
@@ -60,15 +61,15 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
         }
       })();
     }
-  }, [setCategoriesModal, selectedModal, selectedLanguage]);
+  }, []);
 
-  const handleClickLanguage = async (lang, val) => {
-    // val.category = '';
+  const handleClickLanguage = async (languageId, setFieldValue) => {
+    setFieldValue('category', '');
     try {
       setIsLoading(true);
       const { data } = await axios.post(
         `/categories/search/`,
-        { language: lang, parent: null },
+        { language: languageId, parent: null },
         {
           headers: {
             Authorization: process.env.REACT_APP_TOKEN,
@@ -83,27 +84,27 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
     }
   };
 
-  const onAddWord = async ({ image, ...values }) => {
-    console.log(image);
-    console.log(values);
-
+  const onAddWord = async (values) => {
     const formData = new FormData();
-    formData.append('image', image);
-
-    console.log(formData);
+    formData.append('name', values.name);
+    formData.append('translate', values.translate);
+    formData.append('category', values.category);
+    formData.append('language', values.language);
+    if (values.image !== '') {
+      formData.append('image', values.image);
+    }
+    if (values.audio !== '') {
+      formData.append('audio', values.audio);
+    }
 
     try {
       setIsLoading(true);
-      await axios.post(
-        '/words',
-        { ...values, image: formData },
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: process.env.REACT_APP_TOKEN,
-          },
-        }
-      );
+      await axios.post('/words', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: process.env.REACT_APP_TOKEN,
+        },
+      });
 
       const resp = await axios.get(`/categories/${values.category}`, {
         headers: {
@@ -119,38 +120,68 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
   };
 
   const onEditWord = async (values, selectedId) => {
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('translate', values.translate);
+    formData.append('category', values.category);
+    formData.append('language', values.language);
+    if (values.image !== '') {
+      formData.append('image', values.image);
+    }
+    if (values.audio !== '') {
+      formData.append('audio', values.audio);
+    }
+
     try {
       setIsLoading(true);
-      await axios.patch(`/words/${selectedId}`, values, {
+      await axios.patch(`/words/${selectedId}`, formData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: process.env.REACT_APP_TOKEN,
         },
       });
 
-      setIsLoading(false);
-
-      setSelectedCategory((prev) => {
-        if (prev.id === values.category) {
-          return {
-            ...prev,
-            words: prev.words.map((item) => {
-              if (item.id === selectedId) {
-                return { ...item, ...values };
-              }
-              return item;
-            }),
-          };
-        }
-        return {
-          ...prev,
-          words: prev.words.filter((item) => item.id !== selectedId),
-        };
+      const resp = await axios.get(`/categories/${values.category}`, {
+        headers: {
+          Authorization: process.env.REACT_APP_TOKEN,
+        },
       });
+
+      setIsLoading(false);
+      setSelectedCategory(resp.data);
       onClickCloseModal();
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const debounceSearchWord = debounce(async (value) => {
+    try {
+      const resp = await axios.post(
+        '/words/search',
+        { name: value },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: process.env.REACT_APP_TOKEN,
+          },
+        }
+      );
+
+      if (resp.data.length !== 0) {
+        setImagePreview(resp && resp.data[0].imageUrl);
+      } else {
+        setImagePreview(null);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, 300);
+
+  const handleChangeName = (e, setFieldValue) => {
+    const name = e.target.value;
+    setFieldValue('name', name);
+    debounceSearchWord(name, setFieldValue);
   };
 
   return (
@@ -172,7 +203,8 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                 selectedModal || selectedCategory
                   ? selectedCategory.language.id
                   : '',
-              image: '',
+              image: selectedModal ? selectedModal.imageUrl : '',
+              audio: selectedModal ? selectedModal.audioUrl : '',
             }}
             validationSchema={Schema}
             onSubmit={(values) => {
@@ -197,7 +229,7 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                   name="name"
                   label="Введите слово"
                   className={classes.pdr}
-                  onChange={handleChange}
+                  onChange={(e) => handleChangeName(e, setFieldValue)}
                   value={values.name}
                   required
                 />
@@ -253,7 +285,9 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                       ) : (
                         language.map((item) => (
                           <MenuItem
-                            onClick={() => handleClickLanguage(item.id, values)}
+                            onClick={() =>
+                              handleClickLanguage(item.id, setFieldValue)
+                            }
                             key={item.id}
                             value={item.id}
                           >
@@ -264,35 +298,50 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                     </Select>
                   </FormControl>
                 </div>
-                {/* <Dropzone
-                  onDrop={(acceptedFiles) => {
-                    setFieldValue(
-                      'image',
-                      (values.image = { ...acceptedFiles[0] })
-                    );
-                  }}
+                <DropZoneBlock
+                  classes={classes}
+                  values={values.image}
+                  selectedDropzone="image"
+                  setFieldValue={setFieldValue}
+                  preview={imagePreview}
+                  accept={`${'image/jpeg'}, ${'image/png'}`}
+                  setPreview={setImagePreview}
                 >
-                  {({ getRootProps, getInputProps }) => (
-                    <Paper
-                      className={classes.dropzone}
-                      variant="outlined"
-                      {...getRootProps()}
-                    >
-                      {!values.image ? (
-                        <CloudUpload className={classes.dropzoneIcon} />
-                      ) : (
-                        <img
-                          src=""
-                          alt=""
-                          className="img-thumbnail mt-2"
-                          height={200}
-                          width={200}
-                        />
-                      )}
-                      <input {...getInputProps()} name="image" />
-                    </Paper>
-                  )}
-                </Dropzone> */}
+                  <img
+                    src={
+                      selectedModal && !imagePreview
+                        ? values.image
+                        : imagePreview
+                    }
+                    alt={
+                      selectedModal
+                        ? selectedModal.imageName
+                        : values.image.name
+                    }
+                    style={{ width: '100%', height: '220px' }}
+                  />
+                </DropZoneBlock>
+                <DropZoneBlock
+                  classes={classes}
+                  values={values.audio}
+                  selectedDropzone="audio"
+                  setFieldValue={setFieldValue}
+                  preview={audioPreview}
+                  selectedModal={selectedModal}
+                  accept="audio/*"
+                  setPreview={setAudioPreview}
+                >
+                  <audio
+                    controls
+                    src={selectedModal ? values.audio : audioPreview}
+                  >
+                    <track
+                      default
+                      kind="captions"
+                      src={selectedModal ? values.audio : audioPreview}
+                    />
+                  </audio>
+                </DropZoneBlock>
                 <Button
                   style={{ marginTop: 20 }}
                   color="primary"

@@ -7,3 +7,5 @@ export { default as DrawerBlock } from './DrawerBlock';
 export { default as FilterPopup } from './FilterPopup';
 export { default as ContentTop } from './ContentTop';
 export { default as LoadingModal } from './LoadingModal';
+export { default as ModalImage } from './ModalImage';
+export { default as DropZoneBlock } from './DropZoneBlock';

@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Button, TableCell } from '@material-ui/core';
+import { Button, TableCell, Typography } from '@material-ui/core';
 
 import {
   ContentTop,
@@ -15,6 +15,7 @@ const Language = React.memo(
     const [searchValue, setSearchValue] = React.useState('');
 
     const onClickOpenEdit = (obj) => {
+      console.log(obj);
       setSelectedModal(obj);
       onOpenLanguage();
     };
@@ -43,7 +44,10 @@ const Language = React.memo(
         />
         <TableBlock>
           <TableHeadBlock>
-            <TableCell style={{ width: '70%' }}>Язык</TableCell>
+            <TableCell style={{ width: '30%' }}>Язык</TableCell>
+            <TableCell>Картинки</TableCell>
+            <TableCell>Позиция</TableCell>
+            <TableCell>Активация</TableCell>
             <TableCell>Действия</TableCell>
           </TableHeadBlock>
           {language
@@ -53,6 +57,21 @@ const Language = React.memo(
             .map((item) => (
               <TableBodyBlock key={item.id}>
                 <TableCell>{item.name}</TableCell>
+                <TableCell>
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.imageName}
+                      style={{ width: '70px', height: '40px' }}
+                    />
+                  ) : (
+                    <Typography>Нет картинки</Typography>
+                  )}
+                </TableCell>
+                <TableCell>{item.position}</TableCell>
+                <TableCell>
+                  {item.active ? 'Активный' : 'Не активный'}
+                </TableCell>
                 <TableCell>
                   <Button
                     onClick={() => onClickOpenEdit(item)}

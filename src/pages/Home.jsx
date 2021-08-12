@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Typography } from '@material-ui/core';
+import { Paper, TextField, Typography } from '@material-ui/core';
 
 import AddIcon from '@material-ui/icons/Add';
 
@@ -17,9 +17,17 @@ const Home = React.memo(
     onOpenCategory,
     onOpenLanguage,
   }) => {
+    const [image, setImage] = React.useState('');
+
     React.useEffect(() => {
       setSelectedCategory(null);
     });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+
+      console.log(image);
+    };
 
     return (
       <>
@@ -60,6 +68,15 @@ const Home = React.memo(
         )}
         <CategoryModal />
         <LanguageModal />
+        {/* <form onSubmit={handleSubmit}>
+        <input
+          name="image"
+          type="file"
+          onChange={(e) => setImage(e.target.files)}
+          // value={image}
+        />
+        <button type="submit">Отправить</button>
+        </form> */}
       </>
     );
   }

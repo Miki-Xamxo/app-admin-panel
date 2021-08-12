@@ -140,8 +140,6 @@ function App() {
   const [visibleWord, setVisibleWord] = React.useState(false);
   const [visibleCategory, setVisibleCategory] = React.useState(false);
   const [visibleLanguage, setVisibleLanguage] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isFetching, setIFetching] = React.useState(false);
   const [selectedModal, setSelectedModal] = React.useState(null);
   const [selectedLanguage, setSelectedLanguage] = React.useState(null);
   const [categories, setCategories] = React.useState([]);
@@ -157,8 +155,12 @@ function App() {
           },
         });
 
-        setLanguage(respLanguage.data);
-        setSelectedLanguage(respLanguage.data[1].id);
+        const sortLanguage = respLanguage.data.sort((a, b) =>
+          a.position > b.position ? 1 : -1
+        );
+
+        setLanguage(sortLanguage);
+        setSelectedLanguage(sortLanguage[1].id);
       } catch (error) {
         console.log(error);
       }
@@ -204,14 +206,11 @@ function App() {
         language,
         categories,
         setLanguage,
-        isFetching,
-        setIFetching,
         visibleCategory,
         visibleWord,
+        setVisibleLanguage,
         visibleLanguage,
         selectedModal,
-        isLoading,
-        setIsLoading,
         selectedLanguage,
         setSelectedModal,
         setSelectedLanguage,
@@ -251,10 +250,6 @@ function App() {
                 <Route path="/categories/:id" exact>
                   <Word
                     classes={classes}
-                    setIsLoading={setIsLoading}
-                    onClickCloseModal={onClickCloseModal}
-                    setCategories={setCategories}
-                    selectedLanguage={selectedLanguage}
                     setSelectedModal={setSelectedModal}
                     onOpenWord={handleOpenModalWord}
                     selectedCategory={selectedCategory}

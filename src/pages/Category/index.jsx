@@ -44,7 +44,7 @@ const Category = React.memo(
           console.error(error);
         }
       })();
-    }, [selectedLanguage, setCategories]);
+    }, [selectedLanguage]);
 
     const onClickEditCategory = (obj) => {
       setSelectedModal(obj);

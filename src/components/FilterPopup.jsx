@@ -19,18 +19,18 @@ const FilterPopup = () => {
   const { selectedLanguage, language, setSelectedLanguage } =
     React.useContext(AppContext);
 
-  const handleClick = () => {
+  const handleClickFilter = () => {
     setOpen(!open);
   };
 
-  const handleChange = (id) => {
+  const handleChangeCheckbox = (id) => {
     setChecked(true);
     setSelectedLanguage(id);
   };
 
   return (
     <List style={{ width: '40%', marginBottom: 40 }} component={Paper}>
-      <ListItem style={{ cursor: 'pointer' }} onClick={handleClick}>
+      <ListItem style={{ cursor: 'pointer' }} onClick={handleClickFilter}>
         <ListItemText primary="Фильтр" />
         {open ? (
           <ExpandMore fontSize="large" />
@@ -44,7 +44,7 @@ const FilterPopup = () => {
           {language.map((item) => (
             <ListItem
               key={item.id}
-              onClick={() => handleChange(item.id)}
+              onClick={() => handleChangeCheckbox(item.id)}
               button
             >
               <Checkbox
