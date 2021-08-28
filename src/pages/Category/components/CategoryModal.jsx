@@ -23,7 +23,7 @@ const CategoryModal = () => {
   const Schema = Yup.object().shape({
     name: Yup.string().required('Обязательное поле'),
     language: Yup.string().required('Обязательное поле'),
-    position: Yup.string().required('Обязательное поле'),
+    position: Yup.number().required('Обязательное поле'),
   });
 
   const {
@@ -65,7 +65,7 @@ const CategoryModal = () => {
 
     try {
       setIsLoading(true);
-      await axios.post('/categories', values, {
+      await axios.post('/categories', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: process.env.REACT_APP_TOKEN,
@@ -107,9 +107,9 @@ const CategoryModal = () => {
 
     try {
       setIsLoading(true);
-      await axios.patch(`/categories/${selectedId}`, values, {
+      await axios.patch(`/categories/${selectedId}`, formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           Authorization: process.env.REACT_APP_TOKEN,
         },
       });
