@@ -9,3 +9,4 @@ export { default as ContentTop } from './ContentTop';
 export { default as LoadingModal } from './LoadingModal';
 export { default as ModalImage } from './ModalImage';
 export { default as DropZoneBlock } from './DropZoneBlock';
+export { default as AlertMassege } from './AlertMassege';

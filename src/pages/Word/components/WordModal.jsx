@@ -8,36 +8,56 @@ import {
   TextField,
   InputLabel,
   Select,
-  Paper,
   MenuItem,
-  IconButton,
-  Icon,
+  FormHelperText,
 } from '@material-ui/core';
-import { Formik, useFormik } from 'formik';
-import Dropzone from 'react-dropzone';
+import { Formik } from 'formik';
 import * as Yup from 'yup';
 
-import CloudUpload from '@material-ui/icons/CloudUpload';
-import ClearIcon from '@material-ui/icons/Clear';
-
-import { DropZoneBlock, LoadingModal, ModalBlock } from '../../../components';
+import {
+  AlertMassege,
+  DropZoneBlock,
+  LoadingModal,
+  ModalBlock,
+} from '../../../components';
 import AppContext from '../../../context';
 
 const Schema = Yup.object().shape({
-  name: Yup.string().required('Required'),
-  translate: Yup.string().required('Required'),
-  category: Yup.string().required('Required'),
-  language: Yup.string().required('Required'),
+  name: Yup.string().required('Обязательное поле'),
+  translate: Yup.string().required('Обязательное поле'),
+  category: Yup.string().required('Обязательное поле'),
+  language: Yup.string().required('Обязательное поле'),
 });
 
 const WordModal = ({ selectedCategory, setSelectedCategory }) => {
-  const { classes, selectedModal, visibleWord, onClickCloseModal, language } =
-    React.useContext(AppContext);
+  const {
+    classes,
+    selectedModal,
+    visibleWord,
+    setVisibleWord,
+    language,
+    setSelectedModal,
+    setShowMassege,
+  } = React.useContext(AppContext);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [categoriesModal, setCategoriesModal] = React.useState([]);
   const [imagePreview, setImagePreview] = React.useState(null);
   const [audioPreview, setAudioPreview] = React.useState(null);
+  const [isError, setIsError] = React.useState(false);
+
+  const onClickCloseModal = () => {
+    if (selectedModal) {
+      setSelectedModal(null);
+    }
+    if (imagePreview) {
+      setImagePreview(null);
+    }
+    if (isError) {
+      setIsError(false);
+    }
+    setVisibleWord(false);
+  };
 
   React.useEffect(() => {
     if (selectedModal) {
@@ -58,6 +78,9 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
           setCategoriesModal(data);
         } catch (error) {
           console.error(error);
+          setShowMassege(true);
+          setIsLoading(false);
+          onClickCloseModal();
         }
       })();
     }
@@ -81,6 +104,9 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
       setCategoriesModal(data);
     } catch (error) {
       console.error(error);
+      setShowMassege(true);
+      setIsLoading(false);
+      onClickCloseModal();
     }
   };
 
@@ -116,6 +142,8 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
       onClickCloseModal();
     } catch (error) {
       console.error(error);
+      setIsError(true);
+      setIsLoading(false);
     }
   };
 
@@ -155,28 +183,30 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
     }
   };
 
-  const debounceSearchWord = debounce(async (value) => {
-    try {
-      const resp = await axios.post(
-        '/words/search',
-        { name: value },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: process.env.REACT_APP_TOKEN,
-          },
-        }
-      );
+  const debounceSearchWord = React.useCallback(
+    debounce(async (value, setFieldValue) => {
+      try {
+        const resp = await axios.post(
+          '/words/search',
+          { name: value },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: process.env.REACT_APP_TOKEN,
+            },
+          }
+        );
 
-      if (resp.data.length !== 0) {
-        setImagePreview(resp && resp.data[0].imageUrl);
-      } else {
-        setImagePreview(null);
+        if (resp.data.length !== 0) {
+          setImagePreview(resp.data[0].imageUrl);
+          setFieldValue('image', resp.data[0].imageUrl);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
-    }
-  }, 300);
+    }, 300),
+    []
+  );
 
   const handleChangeName = (e, setFieldValue) => {
     const name = e.target.value;
@@ -191,6 +221,11 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
       classes={classes}
       title={selectedModal ? 'Изменить слово' : 'Добавить слово'}
     >
+      {isError && (
+        <AlertMassege handleCloseMessage={setIsError} severity="error">
+          Такое слово уже сушествует!
+        </AlertMassege>
+      )}
       <FormControl className={classes.formControl} component="fieldset">
         <FormGroup aria-label="position" row>
           <Formik
@@ -218,9 +253,12 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
             {({
               values,
               handleChange,
+              handleBlur,
               handleSubmit,
               setFieldValue,
               dirty,
+              errors,
+              touched,
               isValid,
             }) => (
               <form onSubmit={handleSubmit}>
@@ -230,7 +268,12 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                   label="Введите слово"
                   className={classes.pdr}
                   onChange={(e) => handleChangeName(e, setFieldValue)}
+                  onBlur={handleBlur}
                   value={values.name}
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={
+                    errors.name && touched.name && String(errors.name)
+                  }
                   required
                 />
                 <TextField
@@ -238,7 +281,14 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                   name="translate"
                   label="Определение"
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   value={values.translate}
+                  error={touched.translate && Boolean(errors.translate)}
+                  helperText={
+                    errors.translate &&
+                    touched.translate &&
+                    String(errors.translate)
+                  }
                   required
                 />
                 <div className={classes.formSelect}>
@@ -269,6 +319,11 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                         ))}
                       </Select>
                     )}
+                    <FormHelperText>
+                      {errors.category &&
+                        touched.category &&
+                        String(errors.category)}
+                    </FormHelperText>
                   </FormControl>
                   <FormControl className={classes.formSelectControl}>
                     <InputLabel>Выберите Язык</InputLabel>
@@ -301,29 +356,33 @@ const WordModal = ({ selectedCategory, setSelectedCategory }) => {
                 <DropZoneBlock
                   classes={classes}
                   values={values.image}
+                  placeholder="изображения"
                   selectedDropzone="image"
                   setFieldValue={setFieldValue}
                   preview={imagePreview}
                   accept={`${'image/jpeg'}, ${'image/png'}`}
                   setPreview={setImagePreview}
                 >
-                  <img
-                    src={
-                      selectedModal && !imagePreview
-                        ? values.image
-                        : imagePreview
-                    }
-                    alt={
-                      selectedModal
-                        ? selectedModal.imageName
-                        : values.image.name
-                    }
-                    style={{ width: '100%', height: '220px' }}
-                  />
+                  {values.image && (
+                    <img
+                      src={
+                        selectedModal && !imagePreview
+                          ? values.image
+                          : imagePreview
+                      }
+                      alt={
+                        selectedModal && !imagePreview
+                          ? selectedModal.imageName
+                          : values.image.name
+                      }
+                      style={{ width: '100%', height: '220px' }}
+                    />
+                  )}
                 </DropZoneBlock>
                 <DropZoneBlock
                   classes={classes}
                   values={values.audio}
+                  placeholder="аудио"
                   selectedDropzone="audio"
                   setFieldValue={setFieldValue}
                   preview={audioPreview}

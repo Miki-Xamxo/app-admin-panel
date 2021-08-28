@@ -17,17 +17,9 @@ const Home = React.memo(
     onOpenCategory,
     onOpenLanguage,
   }) => {
-    const [image, setImage] = React.useState('');
-
     React.useEffect(() => {
       setSelectedCategory(null);
     });
-
-    const handleSubmit = (e) => {
-      e.preventDefault();
-
-      console.log(image);
-    };
 
     return (
       <>
@@ -68,15 +60,6 @@ const Home = React.memo(
         )}
         <CategoryModal />
         <LanguageModal />
-        {/* <form onSubmit={handleSubmit}>
-        <input
-          name="image"
-          type="file"
-          onChange={(e) => setImage(e.target.files)}
-          // value={image}
-        />
-        <button type="submit">Отправить</button>
-        </form> */}
       </>
     );
   }

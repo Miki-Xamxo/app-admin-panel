@@ -13,6 +13,7 @@ const DropZoneBlock = React.memo(
     values,
     setFieldValue,
     preview,
+    placeholder,
     selectedDropzone,
     accept,
     children,
@@ -47,7 +48,10 @@ const DropZoneBlock = React.memo(
               {...getRootProps()}
             >
               {!values && !preview ? (
-                <CloudUpload className={classes.dropzoneIcon} />
+                <>
+                  <CloudUpload className={classes.dropzoneIcon} />
+                  <p>{`Щелкните или перетащите файл ${placeholder}`}</p>
+                </>
               ) : (
                 <>
                   <ClearIcon

@@ -48,6 +48,16 @@ export const theme = createTheme({
       },
     },
 
+    MuiAvatar: {
+      root: {
+        width: '100%'
+      },
+
+      img: {
+        width: 40
+      }
+    },
+
     MuiDialogTitle: {
       root: {
         borderBottom: '1px solid rgb(204, 214, 221)',

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Button, TableCell, Typography } from '@material-ui/core';
 
 import {
+  AlertMassege,
   ContentTop,
   TableBlock,
   TableBodyBlock,
@@ -13,9 +14,9 @@ import LanguageModal from './components/LanguageModal';
 const Language = React.memo(
   ({ classes, language, setLanguage, onOpenLanguage, setSelectedModal }) => {
     const [searchValue, setSearchValue] = React.useState('');
+    const [isError, setIsError] = React.useState(false);
 
     const onClickOpenEdit = (obj) => {
-      console.log(obj);
       setSelectedModal(obj);
       onOpenLanguage();
     };
@@ -30,6 +31,7 @@ const Language = React.memo(
           });
           setLanguage((prev) => prev.filter((item) => item.id !== id));
         } catch (error) {
+          setIsError(true);
           console.error(error);
         }
       }
@@ -37,6 +39,11 @@ const Language = React.memo(
 
     return (
       <>
+        {isError && (
+          <AlertMassege handleCloseMessage={setIsError}>
+            Произошла ошибка при удалении языка
+          </AlertMassege>
+        )}
         <ContentTop
           onClick={onOpenLanguage}
           searchValue={searchValue}
@@ -44,11 +51,13 @@ const Language = React.memo(
         />
         <TableBlock>
           <TableHeadBlock>
-            <TableCell style={{ width: '30%' }}>Язык</TableCell>
-            <TableCell>Картинки</TableCell>
-            <TableCell>Позиция</TableCell>
-            <TableCell>Активация</TableCell>
-            <TableCell>Действия</TableCell>
+            <TableCell align="center" style={{ width: '30%' }}>
+              Язык
+            </TableCell>
+            <TableCell align="center">Картинки</TableCell>
+            <TableCell align="center">Позиция</TableCell>
+            <TableCell align="center">Активация</TableCell>
+            <TableCell align="center">Действия</TableCell>
           </TableHeadBlock>
           {language
             .filter((item) =>
@@ -56,8 +65,8 @@ const Language = React.memo(
             )
             .map((item) => (
               <TableBodyBlock key={item.id}>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>
+                <TableCell align="center">{item.name}</TableCell>
+                <TableCell align="center">
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
@@ -68,11 +77,11 @@ const Language = React.memo(
                     <Typography>Нет картинки</Typography>
                   )}
                 </TableCell>
-                <TableCell>{item.position}</TableCell>
-                <TableCell>
+                <TableCell align="center">{item.position}</TableCell>
+                <TableCell align="center">
                   {item.active ? 'Активный' : 'Не активный'}
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <Button
                     onClick={() => onClickOpenEdit(item)}
                     variant="contained"

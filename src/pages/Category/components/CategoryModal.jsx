@@ -11,13 +11,19 @@ import {
 } from '@material-ui/core';
 
 import axios from 'axios';
-import { LoadingModal, ModalBlock } from '../../../components';
+import {
+  AlertMassege,
+  DropZoneBlock,
+  LoadingModal,
+  ModalBlock,
+} from '../../../components';
 import AppContext from '../../../context';
 
 const CategoryModal = () => {
   const Schema = Yup.object().shape({
-    name: Yup.string().required('Required'),
-    language: Yup.string().required('Required'),
+    name: Yup.string().required('Обязательное поле'),
+    language: Yup.string().required('Обязательное поле'),
+    position: Yup.string().required('Обязательное поле'),
   });
 
   const {
@@ -25,26 +31,46 @@ const CategoryModal = () => {
     selectedModal,
     language,
     visibleCategory,
-    onClickCloseModal,
+    setVisibleCategory,
     setCategories,
+    setSelectedModal,
     selectedLanguage,
   } = React.useContext(AppContext);
 
+  const [imagePreview, setImagePreview] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
+
+  const onClickCloseModal = () => {
+    if (selectedModal) {
+      setSelectedModal(null);
+    }
+    if (imagePreview) {
+      setImagePreview(null);
+    }
+    if (isError) {
+      setIsError(false);
+    }
+    setVisibleCategory(false);
+  };
 
   const onAddCategory = async (values) => {
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('language', values.language);
+    formData.append('position', values.position);
+    if (values.image !== '') {
+      formData.append('image', values.image);
+    }
+
     try {
       setIsLoading(true);
-      await axios.post(
-        '/categories',
-        { ...values, position: 1 },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: process.env.REACT_APP_TOKEN,
-          },
-        }
-      );
+      await axios.post('/categories', values, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: process.env.REACT_APP_TOKEN,
+        },
+      });
 
       const { data } = await axios.post(
         `/categories/search/`,
@@ -56,15 +82,29 @@ const CategoryModal = () => {
         }
       );
 
+      const sortCategories = data.sort((a, b) =>
+        a.position > b.position ? 1 : -1
+      );
+
       setIsLoading(false);
-      setCategories(data);
+      setCategories(sortCategories);
       onClickCloseModal();
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
+      setIsError(true);
     }
   };
 
   const onEditCategory = async (values, selectedId) => {
+    const formData = new FormData();
+    formData.append('name', values.name);
+    formData.append('language', values.language);
+    formData.append('position', values.position);
+    if (values.image !== '') {
+      formData.append('image', values.image);
+    }
+
     try {
       setIsLoading(true);
       await axios.patch(`/categories/${selectedId}`, values, {
@@ -74,18 +114,27 @@ const CategoryModal = () => {
         },
       });
 
-      setIsLoading(false);
-      setCategories((prev) =>
-        prev.map((item) => {
-          if (item.id === selectedId) {
-            return { ...item, ...values };
-          }
-          return item;
-        })
+      const { data } = await axios.post(
+        `/categories/search/`,
+        { language: values.language, parent: null },
+        {
+          headers: {
+            Authorization: process.env.REACT_APP_TOKEN,
+          },
+        }
       );
+
+      const sortCategories = data.sort((a, b) =>
+        a.position > b.position ? 1 : -1
+      );
+
+      setIsLoading(false);
+      setCategories(sortCategories);
       onClickCloseModal();
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
+      setIsError(true);
     }
   };
 
@@ -100,11 +149,20 @@ const CategoryModal = () => {
       classes={classes}
       title={selectedModal ? 'Изменить категорию' : 'Добавить категорию'}
     >
+      {isError && (
+        <AlertMassege handleCloseMessage={setIsError}>
+          {selectedModal
+            ? 'Произошла ошибка при изменении категории'
+            : 'Произошла ошибка при добавлении категории'}
+        </AlertMassege>
+      )}
       <FormControl className={classes.formControl} component="fieldset">
         <Formik
           initialValues={{
             name: selectedModal ? selectedModal.name : '',
+            position: selectedModal ? selectedModal.position : '',
             language: selectedModal ? selectedLanguage : '',
+            image: selectedModal ? selectedModal.imageUrl : '',
           }}
           validationSchema={Schema}
           onSubmit={(values) => {
@@ -115,7 +173,17 @@ const CategoryModal = () => {
             }
           }}
         >
-          {({ values, handleChange, handleSubmit, isValid, dirty }) => (
+          {({
+            values,
+            handleChange,
+            handleSubmit,
+            handleBlur,
+            setFieldValue,
+            errors,
+            touched,
+            isValid,
+            dirty,
+          }) => (
             <form onSubmit={handleSubmit}>
               <TextField
                 type="text"
@@ -123,8 +191,24 @@ const CategoryModal = () => {
                 fullWidth
                 label="Имя категории"
                 onChange={handleChange}
+                onBlur={handleBlur}
                 value={values.name}
+                error={touched.name && Boolean(errors.name)}
+                helperText={errors.name && touched.name && String(errors.name)}
                 required
+              />
+              <TextField
+                type="number"
+                name="position"
+                label="Введите позицию"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.position}
+                error={touched.position && Boolean(errors.position)}
+                helperText={
+                  errors.position && touched.position && String(errors.position)
+                }
+                fullWidth
               />
               <div className={classes.formSelect}>
                 <FormControl fullWidth style={{ marginTop: 20 }}>
@@ -143,7 +227,34 @@ const CategoryModal = () => {
                   </Select>
                 </FormControl>
               </div>
+              <DropZoneBlock
+                classes={classes}
+                values={values.image}
+                selectedDropzone="image"
+                placeholder="изображения"
+                setFieldValue={setFieldValue}
+                preview={imagePreview}
+                accept={`${'image/jpeg'}, ${'image/png'}`}
+                setPreview={setImagePreview}
+              >
+                {values.image && (
+                  <img
+                    src={
+                      selectedModal && !imagePreview
+                        ? values.image
+                        : imagePreview
+                    }
+                    alt={
+                      selectedModal
+                        ? selectedModal.imageName
+                        : values.image.name
+                    }
+                    style={{ width: '100%', height: '220px' }}
+                  />
+                )}
+              </DropZoneBlock>
               <Button
+                style={{ marginTop: 20 }}
                 color="primary"
                 variant="contained"
                 type="submit"

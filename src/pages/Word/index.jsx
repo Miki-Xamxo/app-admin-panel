@@ -3,13 +3,7 @@ import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
-import {
-  Button,
-  TableCell,
-  CircularProgress,
-  Avatar,
-  Typography,
-} from '@material-ui/core';
+import { Button, TableCell, CircularProgress, Avatar } from '@material-ui/core';
 
 import {
   ContentTop,
@@ -17,6 +11,7 @@ import {
   TableBodyBlock,
   TableHeadBlock,
   ModalImage,
+  AlertMassege,
 } from '../../components';
 import WordModal from './components/WordModal';
 
@@ -25,6 +20,7 @@ const Word = React.memo(
     classes,
     setSelectedModal,
     onOpenWord,
+    setShowMassege,
     selectedCategory,
     setSelectedCategory,
     visibleWord,
@@ -33,6 +29,7 @@ const Word = React.memo(
     const [searchValue, setSearchValue] = React.useState('');
     const [visibleImage, setVisibleImage] = React.useState(false);
     const [selectedImage, setSelectedImage] = React.useState(null);
+    const [isError, setIsError] = React.useState(false);
 
     const params = useParams();
 
@@ -45,9 +42,11 @@ const Word = React.memo(
             },
           });
 
-          setIsFetching(false);
           setSelectedCategory(resp.data);
+          setIsFetching(false);
         } catch (error) {
+          setShowMassege(true);
+          setIsFetching(false);
           console.error(error);
         }
       })();
@@ -70,16 +69,17 @@ const Word = React.memo(
     const onRemoveItem = async (id) => {
       if (window.confirm('Вы действительно хотите удалить?')) {
         try {
-          setSelectedCategory((prev) => ({
-            ...prev,
-            words: prev.words.filter((item) => item.id !== id),
-          }));
           await axios.delete(`/words/${id}`, {
             headers: {
               Authorization: process.env.REACT_APP_TOKEN,
             },
           });
+          setSelectedCategory((prev) => ({
+            ...prev,
+            words: prev.words.filter((item) => item.id !== id),
+          }));
         } catch (error) {
+          setIsError(true);
           console.error(error);
         }
       }
@@ -87,6 +87,11 @@ const Word = React.memo(
 
     return (
       <>
+        {isError && (
+          <AlertMassege handleCloseMessage={setIsError}>
+            Произошла ошибка при удалении слова
+          </AlertMassege>
+        )}
         <Button>
           <Link to="/categories">Вернуться назад</Link>
         </Button>
@@ -98,11 +103,11 @@ const Word = React.memo(
         {!isFetching ? (
           <TableBlock>
             <TableHeadBlock>
-              <TableCell>Слово</TableCell>
-              <TableCell>Определение</TableCell>
-              <TableCell>Картинка</TableCell>
-              <TableCell>Аудио</TableCell>
-              <TableCell>Действия</TableCell>
+              <TableCell align="center">Слово</TableCell>
+              <TableCell align="center">Определение</TableCell>
+              <TableCell align="center">Картинка</TableCell>
+              <TableCell align="center">Аудио</TableCell>
+              <TableCell align="center">Действия</TableCell>
             </TableHeadBlock>
             {selectedCategory &&
               selectedCategory.words
@@ -111,14 +116,20 @@ const Word = React.memo(
                 )
                 .map((item) => (
                   <TableBodyBlock key={item.id}>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.translate}</TableCell>
-                    <TableCell>
+                    <TableCell align="center" variant="body">
+                      {item.name}
+                    </TableCell>
+                    <TableCell align="center">{item.translate}</TableCell>
+                    <TableCell align="center">
                       {item.imageUrl ? (
                         <Avatar
-                          alt={item.imageName}
+                          variant="square"
+                          aria-label="recipe"
+                          alt={item.imageNamde}
                           src={item.imageUrl}
-                          style={{ cursor: 'pointer' }}
+                          style={{
+                            cursor: 'pointer',
+                          }}
                           onClick={() =>
                             handleSelectedImage({
                               imageUrl: item.imageUrl,
@@ -127,10 +138,10 @@ const Word = React.memo(
                           }
                         />
                       ) : (
-                        <Typography>Нет картинки</Typography>
+                        'Нет картинки'
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {item.audioUrl ? (
                         <AudioPlayer
                           style={{
@@ -139,17 +150,17 @@ const Word = React.memo(
                             padding: 0,
                           }}
                           src={item.audioUrl}
-                          layout="horizontal-reverse"
                           customAdditionalControls={[]}
                           customProgressBarSection={[]}
                           customVolumeControls={[]}
                           showJumpControls={false}
+                          showDownloadProgress={false}
                         />
                       ) : (
-                        <Typography>Нет аудио</Typography>
+                        'Нет аудио'
                       )}
                     </TableCell>
-                    <TableCell style={{ width: '30%' }}>
+                    <TableCell align="center">
                       <Button
                         onClick={() => onClickOpenEdit(item)}
                         variant="contained"
@@ -186,7 +197,7 @@ const Word = React.memo(
             <img
               src={selectedImage.imageUrl}
               alt={selectedImage.imageName}
-              style={{ width: '400px', height: '420px' }}
+              style={{ width: '100%', height: '420px' }}
             />
           </ModalImage>
         )}

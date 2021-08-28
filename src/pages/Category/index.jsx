@@ -1,9 +1,15 @@
 import React from 'react';
-import { Button, CircularProgress, TableCell } from '@material-ui/core';
+import {
+  Button,
+  CircularProgress,
+  TableCell,
+  Typography,
+} from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 import {
+  AlertMassege,
   ContentTop,
   FilterPopup,
   TableBlock,
@@ -20,28 +26,38 @@ const Category = React.memo(
     selectedLanguage,
     setSelectedModal,
     onOpenCategory,
+    setShowMassege,
   }) => {
     const [isFetching, setIsFetching] = React.useState(true);
     const [searchValue, setSearchValue] = React.useState('');
+    const [isError, setIsError] = React.useState(false);
 
     React.useEffect(() => {
       (async () => {
         try {
-          setIsFetching(true);
-          const respCategories = await axios.post(
-            `/categories/search/`,
-            { language: selectedLanguage, parent: null },
-            {
-              headers: {
-                Authorization: process.env.REACT_APP_TOKEN,
-              },
-            }
-          );
+          if (selectedLanguage) {
+            setIsFetching(true);
+            const respCategories = await axios.post(
+              `/categories/search/`,
+              { language: selectedLanguage, parent: null },
+              {
+                headers: {
+                  Authorization: process.env.REACT_APP_TOKEN,
+                },
+              }
+            );
 
-          setIsFetching(false);
-          setCategories(respCategories.data);
+            const sortCategories = respCategories.data.sort((a, b) =>
+              a.position > b.position ? 1 : -1
+            );
+
+            setIsFetching(false);
+            setCategories(sortCategories);
+          }
         } catch (error) {
           console.error(error);
+          setShowMassege(true);
+          setIsFetching(false);
         }
       })();
     }, [selectedLanguage]);
@@ -61,6 +77,7 @@ const Category = React.memo(
           });
           setCategories((prev) => prev.filter((item) => item.id !== id));
         } catch (error) {
+          setIsError(true);
           console.error(error);
         }
       }
@@ -68,6 +85,11 @@ const Category = React.memo(
 
     return (
       <>
+        {isError && (
+          <AlertMassege handleCloseMessage={setIsError}>
+            Произошла ошибка при удалении категории
+          </AlertMassege>
+        )}
         <ContentTop
           onClick={onOpenCategory}
           searchValue={searchValue}
@@ -77,8 +99,16 @@ const Category = React.memo(
         {!isFetching ? (
           <TableBlock>
             <TableHeadBlock>
-              <TableCell>Категория</TableCell>
-              <TableCell>Действия</TableCell>
+              <TableCell align="center">Категория</TableCell>
+              <TableCell align="center" style={{ width: '20%' }}>
+                Позиция
+              </TableCell>
+              <TableCell align="center" style={{ width: '20%' }}>
+                Картинка
+              </TableCell>
+              <TableCell align="center" style={{ width: '50%' }}>
+                Действия
+              </TableCell>
             </TableHeadBlock>
             {categories
               .filter((item) =>
@@ -86,12 +116,22 @@ const Category = React.memo(
               )
               .map((item) => (
                 <TableBodyBlock key={item.id}>
-                  <Link to={`/categories/${item.id}`}>
-                    <TableCell style={{ width: '70%', cursor: 'pointer' }}>
-                      {item.name}
-                    </TableCell>
-                  </Link>
-                  <TableCell>
+                  <TableCell align="center">
+                    <Link to={`/categories/${item.id}`}>{item.name}</Link>
+                  </TableCell>
+                  <TableCell align="center">{item.position}</TableCell>
+                  <TableCell align="center">
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.imageName}
+                        style={{ width: '70px', height: '40px' }}
+                      />
+                    ) : (
+                      <Typography>Нет картинки</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell align="center">
                     <Button
                       variant="contained"
                       color="secondary"

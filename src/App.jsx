@@ -2,9 +2,10 @@ import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
-import { Header, DrawerBlock } from './components';
-import { Word, Category, Language, Home } from './pages';
+
 import AppContext from './context';
+import { Header, DrawerBlock, AlertMassege } from './components';
+import { Word, Category, Language, Home } from './pages';
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
@@ -145,6 +146,7 @@ function App() {
   const [categories, setCategories] = React.useState([]);
   const [selectedCategory, setSelectedCategory] = React.useState(null);
   const [language, setLanguage] = React.useState([]);
+  const [showMessage, setShowMassege] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -160,8 +162,9 @@ function App() {
         );
 
         setLanguage(sortLanguage);
-        setSelectedLanguage(sortLanguage[1].id);
+        setSelectedLanguage(sortLanguage[0].id);
       } catch (error) {
+        setShowMassege(true);
         console.log(error);
       }
     })();
@@ -187,17 +190,6 @@ function App() {
     setVisibleLanguage(true);
   }, []);
 
-  const onClickCloseModal = () => {
-    if (visibleWord) {
-      setVisibleWord(false);
-    } else if (visibleCategory) {
-      setVisibleCategory(false);
-    } else {
-      setVisibleLanguage(false);
-    }
-    setSelectedModal(null);
-  };
-
   return (
     <AppContext.Provider
       value={{
@@ -207,14 +199,16 @@ function App() {
         categories,
         setLanguage,
         visibleCategory,
+        setVisibleCategory,
         visibleWord,
+        setVisibleWord,
         setVisibleLanguage,
         visibleLanguage,
         selectedModal,
+        setShowMassege,
         selectedLanguage,
         setSelectedModal,
         setSelectedLanguage,
-        onClickCloseModal,
       }}
     >
       <div className={classes.wrapper}>
@@ -223,6 +217,12 @@ function App() {
         <main>
           <div className={classes.container}>
             <div className={classes.content}>
+              {showMessage && (
+                <AlertMassege handleCloseMessage={setShowMassege}>
+                  Произошла ошибка при запросе данных! Пожалуйста обновите
+                  страницу
+                </AlertMassege>
+              )}
               <Switch>
                 <Route path="/" exact>
                   <Home
@@ -241,8 +241,10 @@ function App() {
                     categories={categories}
                     selectedLanguage={selectedLanguage}
                     setCategories={setCategories}
+                    setShowMassege={setShowMassege}
                     setSelectedCategory={setSelectedCategory}
                     setSelectedModal={setSelectedModal}
+                    setVisibleCategory={setVisibleCategory}
                     onOpenCategory={handleOpenModalCategory}
                   />
                 </Route>
@@ -252,6 +254,7 @@ function App() {
                     classes={classes}
                     setSelectedModal={setSelectedModal}
                     onOpenWord={handleOpenModalWord}
+                    setShowMassege={setShowMassege}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                     visibleWord={visibleWord}

@@ -2,10 +2,7 @@ import React from 'react';
 import {
   Button,
   FormControl,
-  InputLabel,
-  MenuItem,
   TextField,
-  Select,
   ListItem,
   Checkbox,
   ListItemText,
@@ -14,12 +11,17 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
 
-import { DropZoneBlock, LoadingModal, ModalBlock } from '../../../components';
+import {
+  AlertMassege,
+  DropZoneBlock,
+  LoadingModal,
+  ModalBlock,
+} from '../../../components';
 import AppContext from '../../../context';
 
 const LanguageModal = () => {
   const Schema = Yup.object().shape({
-    name: Yup.string().required('Required'),
+    name: Yup.string().required('Обязательное поле'),
   });
 
   const {
@@ -29,34 +31,38 @@ const LanguageModal = () => {
     setVisibleLanguage,
     setSelectedModal,
     setLanguage,
-    // onClickCloseModal,
   } = React.useContext(AppContext);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [imagePreview, setImagePreview] = React.useState(null);
+  const [isError, setIsError] = React.useState(false);
 
   if (!visibleLanguage) {
     return null;
   }
 
   const onClickCloseModal = () => {
+    if (selectedModal) {
+      setSelectedModal(null);
+    }
+    if (imagePreview) {
+      setImagePreview(null);
+    }
+    if (isError) {
+      setIsError(false);
+    }
     setVisibleLanguage(false);
-    setImagePreview(null);
-    setSelectedModal(null);
   };
 
   const onAddLanguage = async (values) => {
-    console.log(values.position === '');
     const formData = new FormData();
     formData.append('name', values.name);
+    formData.append('active', values.active);
     if (values.image !== '') {
       formData.append('image', values.image);
     }
     if (values.position !== '') {
       formData.append('position', values.position);
-    }
-    if (values.active) {
-      formData.append('active', values.active);
     }
 
     try {
@@ -80,25 +86,23 @@ const LanguageModal = () => {
 
       setIsLoading(false);
       setLanguage(sortLanguage);
-      // setLanguage((prev) => [...prev, data]);
       onClickCloseModal();
     } catch (error) {
+      setIsLoading(false);
+      setIsError(true);
       console.error(error);
     }
   };
 
   const onEditLanguage = async (values, selectedId) => {
-    console.log(values);
     const formData = new FormData();
     formData.append('name', values.name);
+    formData.append('active', values.active);
     if (values.image !== '') {
       formData.append('image', values.image);
     }
     if (values.position !== '') {
       formData.append('position', values.position);
-    }
-    if (values.active) {
-      formData.append('active', values.active);
     }
 
     try {
@@ -124,6 +128,8 @@ const LanguageModal = () => {
       setLanguage(sortLanguage);
       onClickCloseModal();
     } catch (error) {
+      setIsLoading(false);
+      setIsError(true);
       console.error(error);
     }
   };
@@ -139,6 +145,13 @@ const LanguageModal = () => {
       classes={classes}
       title={selectedModal ? 'Изменить язык' : 'Добавить язык'}
     >
+      {isError && (
+        <AlertMassege handleCloseMessage={setIsError}>
+          {selectedModal
+            ? 'Произошла ошибка при изменении языка'
+            : 'Произошла ошибка при добавлении языка'}
+        </AlertMassege>
+      )}
       <FormControl className={classes.formControl} component="fieldset">
         <Formik
           initialValues={{
@@ -160,7 +173,10 @@ const LanguageModal = () => {
             values,
             handleChange,
             handleSubmit,
+            handleBlur,
             setFieldValue,
+            errors,
+            touched,
             isValid,
             dirty,
           }) => (
@@ -171,7 +187,10 @@ const LanguageModal = () => {
                 label="Введите язык"
                 style={{ marginBottom: 20 }}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 value={values.name}
+                error={touched.name && Boolean(errors.name)}
+                helperText={errors.name && touched.name && String(errors.name)}
                 required
                 fullWidth
               />
@@ -197,20 +216,27 @@ const LanguageModal = () => {
                 classes={classes}
                 values={values.image}
                 selectedDropzone="image"
+                placeholder="изображения"
                 setFieldValue={setFieldValue}
                 preview={imagePreview}
                 accept={`${'image/jpeg'}, ${'image/png'}`}
                 setPreview={setImagePreview}
               >
-                <img
-                  src={
-                    selectedModal && !imagePreview ? values.image : imagePreview
-                  }
-                  alt={
-                    selectedModal ? selectedModal.imageName : values.image.name
-                  }
-                  style={{ width: '100%', height: '220px' }}
-                />
+                {values.image && (
+                  <img
+                    src={
+                      selectedModal && !imagePreview
+                        ? values.image
+                        : imagePreview
+                    }
+                    alt={
+                      selectedModal
+                        ? selectedModal.imageName
+                        : values.image.name
+                    }
+                    style={{ width: '100%', height: '220px' }}
+                  />
+                )}
               </DropZoneBlock>
               <Button
                 color="primary"
